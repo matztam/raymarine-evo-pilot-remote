@@ -12,3 +12,7 @@ Maple Mini (STM32F103) / stm32duino
 MCP2551 CAN-BUS Module
 
 2 Channel Logic Level Converter (https://eckstein-shop.de/SparkFun-Logic-Level-Converter-Bi-Directiona-Shifter-Pegelwandler)
+
+## Board
+
+![board](https://raw.githubusercontent.com/matztam/raymarine-evo-pilot-remote/master/Board/NMEA2000_USB_topview.png)
