@@ -3,13 +3,16 @@
 
 double RaymarinePilot::Heading = 0;
 double RaymarinePilot::Variation = 0;
+int RaymarinePilot::PilotSourceAddress = -1;
+uint8_t RaymarinePilot::PilotMode = PILOT_MODE_STANDBY;
+unsigned int pilotHeadingFilterCount = 0;
 
-//destinationAddress muss aus der tN2kDeviceList ausgelesen werden. Beispiel dazu: DeviceAnalyzer.ino
+//PilotSourceAddress muss aus der tN2kDeviceList ausgelesen werden. Beispiel dazu: DeviceAnalyzer.ino
 
-void RaymarinePilot::SetEvoPilotMode(tN2kMsg &N2kMsg, uint8_t destinationAddress, RaymarinePilotModes mode) {
+void RaymarinePilot::SetEvoPilotMode(tN2kMsg &N2kMsg,RaymarinePilotModes mode) {
   N2kMsg.SetPGN(126208UL);
   N2kMsg.Priority=3;
-  N2kMsg.Destination=destinationAddress;
+  N2kMsg.Destination=PilotSourceAddress;
   N2kMsg.AddByte(1); // Field 1, 1 = Command Message, 2 = Acknowledge Message...
   N2kMsg.AddByte(0x63);
   N2kMsg.AddByte(0xff);
@@ -54,7 +57,7 @@ void RaymarinePilot::SetEvoPilotMode(tN2kMsg &N2kMsg, uint8_t destinationAddress
   N2kMsg.Add4ByteUInt(0); // Field 7, value for first pair =0 for reset distance log.*/
 }
 
-void RaymarinePilot::SetEvoPilotCourse(tN2kMsg &N2kMsg, uint8_t destinationAddress, double heading, int change) {
+void RaymarinePilot::SetEvoPilotCourse(tN2kMsg &N2kMsg,double heading, int change) {
   double course = heading + change;
   if ((course) >= 360){
     course -= 360;
@@ -73,7 +76,7 @@ void RaymarinePilot::SetEvoPilotCourse(tN2kMsg &N2kMsg, uint8_t destinationAddre
   
   N2kMsg.SetPGN(126208UL);
   N2kMsg.Priority=3;
-  N2kMsg.Destination=destinationAddress;
+  N2kMsg.Destination=PilotSourceAddress;
   N2kMsg.AddByte(1); // Field 1, 1 = Command Message, 2 = Acknowledge Message...
   N2kMsg.AddByte(0x50);
   N2kMsg.AddByte(0xff);
@@ -90,11 +93,11 @@ void RaymarinePilot::SetEvoPilotCourse(tN2kMsg &N2kMsg, uint8_t destinationAddre
   N2kMsg.AddByte(byte1);
 }
 
-void RaymarinePilot::TurnToWaypointMode(tN2kMsg &N2kMsg, uint8_t destinationAddress){
+void RaymarinePilot::TurnToWaypointMode(tN2kMsg &N2kMsg){
  //"01,63,ff,00,f8,04,01,3b,07,03,04,04,81,01,05,ff,ff" 
   N2kMsg.SetPGN(126208UL);
   N2kMsg.Priority=3;
-  N2kMsg.Destination=destinationAddress;
+  N2kMsg.Destination=PilotSourceAddress;
   N2kMsg.AddByte(0x01); // Field 1, 1 = Command Message, 2 = Acknowledge Message...
   N2kMsg.AddByte(0x63);
   N2kMsg.AddByte(0xff);
@@ -114,12 +117,12 @@ void RaymarinePilot::TurnToWaypointMode(tN2kMsg &N2kMsg, uint8_t destinationAddr
   N2kMsg.AddByte(0xff);
 }
 
-void RaymarinePilot::TurnToWaypoint(tN2kMsg &N2kMsg, uint8_t destinationAddress){
+void RaymarinePilot::TurnToWaypoint(tN2kMsg &N2kMsg){
   //00,00,ef,01,ff,ff,ff,ff,ff,ff,04,01,3b,07,03,04,04,6c,05,1a,50"
   
   N2kMsg.SetPGN(126208UL);
   N2kMsg.Priority=3;
-  N2kMsg.Destination=destinationAddress;
+  N2kMsg.Destination=PilotSourceAddress;
   N2kMsg.AddByte(0x00);
   N2kMsg.AddByte(0x00);
   N2kMsg.AddByte(0xef);
@@ -143,7 +146,7 @@ void RaymarinePilot::TurnToWaypoint(tN2kMsg &N2kMsg, uint8_t destinationAddress)
   N2kMsg.AddByte(0x50);
 }
 
-void RaymarinePilot::KeyCommand(tN2kMsg &N2kMsg, uint8_t destinationAddress, uint16_t command){
+void RaymarinePilot::KeyCommand(tN2kMsg &N2kMsg,uint16_t command){
   //const key_command = "3b,9f,f0,81,86,21,%s,%s,ff,ff,ff,ff,ff,c1,c2,cd,66,80,d3,42,b1,c8"
 
   byte commandByte0, commandByte1;
@@ -152,7 +155,7 @@ void RaymarinePilot::KeyCommand(tN2kMsg &N2kMsg, uint8_t destinationAddress, uin
   
   N2kMsg.SetPGN(126720UL);
   N2kMsg.Priority=7;
-  N2kMsg.Destination=destinationAddress;
+  N2kMsg.Destination=PilotSourceAddress;
 
   N2kMsg.AddByte(0x3b);
   N2kMsg.AddByte(0x9f);
@@ -193,14 +196,26 @@ void RaymarinePilot::HandleNMEA2000Msg(const tN2kMsg &N2kMsg) {
       Heading = RadToDeg(_HeadingRad);
     }
   }
-  else if(N2kMsg.PGN == 65288L){ //Alarm  
+  else if(N2kMsg.PGN == 65288L){ //Alarm     
+    unsigned char AlarmState;
     unsigned char AlarmCode;
     unsigned char AlarmGroup;
+
+    char AlarmStateString[2] = {0};
+    char AlarmCodeString[2] = {0};
+    char AlarmGroupString[2] = {0};
     
-    if(ParseN2kAlarm(N2kMsg, AlarmCode, AlarmGroup)){
-      Serial.print("Alarm ");
-      Serial.print(AlarmCode, HEX);
-      Serial.println(AlarmGroup, HEX);
+    if(RaymarinePilot::ParseN2kAlarm(N2kMsg, AlarmState, AlarmCode, AlarmGroup)){
+      sprintf(AlarmStateString,"%02X", (int) AlarmState);
+      sprintf(AlarmCodeString,"%02X", (int) AlarmCode);
+      sprintf(AlarmGroupString,"%02X", (int) AlarmGroup);
+      
+      Serial.print("Alarm Group: ");      
+      Serial.print(AlarmGroupString);
+      Serial.print(" Code: ");
+      Serial.print(AlarmCodeString);
+      Serial.print(" State: ");
+      Serial.println(AlarmStateString);
 
       if(AlarmCode == 0x1d && AlarmGroup == 0x01){
         Serial.println("Alarm Waypoint");
@@ -212,7 +227,7 @@ void RaymarinePilot::HandleNMEA2000Msg(const tN2kMsg &N2kMsg) {
     unsigned char Mode;
     unsigned char Submode;
     
-    if(ParseN2kPiloteState(N2kMsg, Mode, Submode)){
+    if(ParseN2kPilotState(N2kMsg, Mode, Submode)){
       Serial.print("Mode / Submode ");
       Serial.print(Mode, HEX);
       Serial.print(" ");
@@ -244,13 +259,52 @@ void RaymarinePilot::HandleNMEA2000Msg(const tN2kMsg &N2kMsg) {
       
     }
   }
+
+  else if(N2kMsg.PGN == 65345L){ //Pilot Wind Angle
+    double WindAngle;
+    double RollingAverageWindAngle;
+    
+    if(RaymarinePilot::ParseN2kPilotWindAngle(N2kMsg, WindAngle, RollingAverageWindAngle)){
+
+      WindAngle = RadToDeg(WindAngle);
+      RollingAverageWindAngle = RadToDeg(RollingAverageWindAngle);
+
+      Serial.println((String) "Wind angle: " + WindAngle + " Rolling average: " + RollingAverageWindAngle);
+    }
+  }
+
+  else if(N2kMsg.PGN == 65360L){ //Pilot Heading
+    double HeadingTrue;
+    double HeadingMagnetic;
+
+    pilotHeadingFilterCount++;
+    pilotHeadingFilterCount = pilotHeadingFilterCount % 4;
+    
+    if(pilotHeadingFilterCount > 0){
+      return;
+    }
+    
+    if(RaymarinePilot::ParseN2kPGN65360(N2kMsg, HeadingTrue, HeadingMagnetic)){
+
+      HeadingTrue = RadToDeg(HeadingTrue);
+      HeadingMagnetic = RadToDeg(HeadingMagnetic);
+
+      Serial.println((String) "Heading magnetic: " + HeadingMagnetic);
+      String message;
+      
+      if(HeadingTrue != N2kDoubleNA){
+        Serial.println((String) "Heading true: " + HeadingTrue);
+      }
+    }
+  }
 }
 
-bool RaymarinePilot::ParseN2kPGN65288(const tN2kMsg &N2kMsg, unsigned char &AlarmCode, unsigned char &AlarmGroup) {
+bool RaymarinePilot::ParseN2kPGN65288(const tN2kMsg &N2kMsg, unsigned char &AlarmStatus, unsigned char &AlarmCode, unsigned char &AlarmGroup) {
   if (N2kMsg.PGN!=65288L) return false;
 
-  int Index=4;
+  int Index=3;
 
+  AlarmStatus = N2kMsg.GetByte(Index);
   AlarmCode = N2kMsg.GetByte(Index);
   AlarmGroup = N2kMsg.GetByte(Index);
 
@@ -258,13 +312,34 @@ bool RaymarinePilot::ParseN2kPGN65288(const tN2kMsg &N2kMsg, unsigned char &Alar
 }
 
 bool RaymarinePilot::ParseN2kPGN65379(const tN2kMsg &N2kMsg, unsigned char &Mode, unsigned char &Submode) {
-  Serial.println(N2kMsg.PGN);
   if (N2kMsg.PGN!=65379L) return false;
 
   int Index=2;
 
   Mode = N2kMsg.GetByte(Index);
   Submode = N2kMsg.GetByte(Index);
+
+  return true;
+}
+
+bool RaymarinePilot::ParseN2kPGN65345(const tN2kMsg &N2kMsg, double &WindAngle, double &RollingAverageWindAngle) {
+  if (N2kMsg.PGN!=65345L) return false;
+
+  int Index=2;
+
+  WindAngle = N2kMsg.Get2ByteDouble(0.0001,Index);
+  RollingAverageWindAngle = N2kMsg.Get2ByteDouble(0.0001,Index);
+
+  return true;
+}
+
+bool RaymarinePilot::ParseN2kPGN65360(const tN2kMsg &N2kMsg, double &HeadingTrue, double &HeadingMagnetic) {
+  if (N2kMsg.PGN!=65360L) return false;
+
+  int Index=3;
+
+  HeadingTrue = N2kMsg.Get2ByteUDouble(0.0001,Index);
+  HeadingMagnetic = N2kMsg.Get2ByteUDouble(0.0001,Index);
 
   return true;
 }

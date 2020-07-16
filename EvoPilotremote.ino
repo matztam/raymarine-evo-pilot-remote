@@ -23,8 +23,6 @@ const unsigned long ReceiveMessages[] PROGMEM={127250L,65288L,65379L,0};
 tN2kDeviceList *pN2kDeviceList;
 
 byte inByte;
-short pilotSourceAddress = -1;
-
 
 void setup() {
   delay(1000);
@@ -66,12 +64,19 @@ void setup() {
   NMEA2000.EnableForward(true); // Disable all msg forwarding to USB (=Serial)
   NMEA2000.Open();
 
-  while(pilotSourceAddress <= 0){
-    NMEA2000.ParseMessages(); 
-    pilotSourceAddress = getDeviceSourceAddress("EV-1");
-  }
+  unsigned long t = millis();
   
-  Serial.println((String) "Found EV-1 Pilot: " + pilotSourceAddress);
+  while(RaymarinePilot::PilotSourceAddress < 0 && millis() - t < 5000){
+    NMEA2000.ParseMessages();
+    RaymarinePilot::PilotSourceAddress = getDeviceSourceAddress("EV-1");
+  }
+
+  if(RaymarinePilot::PilotSourceAddress >= 0){
+    Serial.println((String) "Found EV-1 Pilot: " + RaymarinePilot::PilotSourceAddress);
+  }else{
+    Serial.println((String) "EV-1 Pilot not found. Defaulting to " + RaymarinePilot::PilotSourceAddress);
+    RaymarinePilot::PilotSourceAddress = 204;
+  }
 }
 
 
@@ -83,7 +88,7 @@ void loop() {
       Serial.println("Setting PILOT_MODE_STANDBY");
       
       tN2kMsg N2kMsg;
-      RaymarinePilot::SetEvoPilotMode(N2kMsg, pilotSourceAddress, PILOT_MODE_STANDBY);
+      RaymarinePilot::SetEvoPilotMode(N2kMsg, PILOT_MODE_STANDBY);
       NMEA2000.SendMsg(N2kMsg);
     } 
     
@@ -91,7 +96,7 @@ void loop() {
       Serial.println("Setting PILOT_MODE_AUTO");
       
       tN2kMsg N2kMsg;
-      RaymarinePilot::SetEvoPilotMode(N2kMsg, pilotSourceAddress, PILOT_MODE_AUTO);
+      RaymarinePilot::SetEvoPilotMode(N2kMsg, PILOT_MODE_AUTO);
       NMEA2000.SendMsg(N2kMsg);
     } 
     
@@ -99,7 +104,7 @@ void loop() {
       Serial.println("Setting PILOT_MODE_WIND");
       
       tN2kMsg N2kMsg;
-      RaymarinePilot::SetEvoPilotMode(N2kMsg, pilotSourceAddress, PILOT_MODE_WIND);
+      RaymarinePilot::SetEvoPilotMode(N2kMsg, PILOT_MODE_WIND);
       NMEA2000.SendMsg(N2kMsg);
     } 
     
@@ -107,7 +112,7 @@ void loop() {
       Serial.println("Setting PILOT_MODE_TRACK");
       
       tN2kMsg N2kMsg;
-      RaymarinePilot::SetEvoPilotMode(N2kMsg, pilotSourceAddress, PILOT_MODE_TRACK);
+      RaymarinePilot::SetEvoPilotMode(N2kMsg, PILOT_MODE_TRACK);
       NMEA2000.SendMsg(N2kMsg);
     }
     
@@ -116,7 +121,7 @@ void loop() {
       Serial.println((((int) RaymarinePilot::Heading + 10) % 360));
       
       tN2kMsg N2kMsg;
-      RaymarinePilot::SetEvoPilotCourse(N2kMsg, pilotSourceAddress, RaymarinePilot::Heading, 10);
+      RaymarinePilot::SetEvoPilotCourse(N2kMsg, RaymarinePilot::Heading, 10);
       NMEA2000.SendMsg(N2kMsg);
     }
     
@@ -125,7 +130,7 @@ void loop() {
       Serial.println((((int) RaymarinePilot::Heading - 10 + 360) % 360));
       
       tN2kMsg N2kMsg;
-      RaymarinePilot::SetEvoPilotCourse(N2kMsg, pilotSourceAddress, RaymarinePilot::Heading, -10);
+      RaymarinePilot::SetEvoPilotCourse(N2kMsg, RaymarinePilot::Heading, -10);
       NMEA2000.SendMsg(N2kMsg);
     }
 
@@ -133,11 +138,11 @@ void loop() {
         Serial.println("Confirm Waypoint");
       
         tN2kMsg N2kMsg1;
-        RaymarinePilot::TurnToWaypointMode(N2kMsg1, pilotSourceAddress);
+        RaymarinePilot::TurnToWaypointMode(N2kMsg1);
         NMEA2000.SendMsg(N2kMsg1);
 
         tN2kMsg N2kMsg2;
-        RaymarinePilot::TurnToWaypoint(N2kMsg2, pilotSourceAddress);
+        RaymarinePilot::TurnToWaypoint(N2kMsg2);
         NMEA2000.SendMsg(N2kMsg2);
     }
 
@@ -145,7 +150,7 @@ void loop() {
         Serial.println("Plus 1");
       
         tN2kMsg N2kMsg;
-        RaymarinePilot::KeyCommand(N2kMsg, pilotSourceAddress, KEY_PLUS_1);
+        RaymarinePilot::KeyCommand(N2kMsg, KEY_PLUS_1);
         NMEA2000.SendMsg(N2kMsg);
     }
 
@@ -153,7 +158,7 @@ void loop() {
         Serial.println("Plus 10");
       
         tN2kMsg N2kMsg;
-        RaymarinePilot::KeyCommand(N2kMsg, pilotSourceAddress, KEY_PLUS_10);
+        RaymarinePilot::KeyCommand(N2kMsg, KEY_PLUS_10);
         NMEA2000.SendMsg(N2kMsg);
     }
 
@@ -161,7 +166,7 @@ void loop() {
         Serial.println("Minus 1");
       
         tN2kMsg N2kMsg;
-        RaymarinePilot::KeyCommand(N2kMsg, pilotSourceAddress, KEY_MINUS_1);
+        RaymarinePilot::KeyCommand(N2kMsg, KEY_MINUS_1);
         NMEA2000.SendMsg(N2kMsg);
     }
 
@@ -169,7 +174,7 @@ void loop() {
         Serial.println("Minus 10");
       
         tN2kMsg N2kMsg;
-        RaymarinePilot::KeyCommand(N2kMsg, pilotSourceAddress, KEY_MINUS_10);
+        RaymarinePilot::KeyCommand(N2kMsg, KEY_MINUS_10);
         NMEA2000.SendMsg(N2kMsg);
     }
 
@@ -177,7 +182,7 @@ void loop() {
         Serial.println("Minus 1 Minus 10");
       
         tN2kMsg N2kMsg;
-        RaymarinePilot::KeyCommand(N2kMsg, pilotSourceAddress, KEY_MINUS_1_MINUS_10);
+        RaymarinePilot::KeyCommand(N2kMsg, KEY_MINUS_1_MINUS_10);
         NMEA2000.SendMsg(N2kMsg);
     }
 
@@ -185,7 +190,7 @@ void loop() {
         Serial.println("Plus 1 Plus 10");
       
         tN2kMsg N2kMsg;
-        RaymarinePilot::KeyCommand(N2kMsg, pilotSourceAddress, KEY_PLUS_1_PLUS_10);
+        RaymarinePilot::KeyCommand(N2kMsg, KEY_PLUS_1_PLUS_10);
         NMEA2000.SendMsg(N2kMsg);
     }
   }
@@ -193,8 +198,9 @@ void loop() {
   NMEA2000.ParseMessages();  
 }
 
-int getDeviceSourceAddress(String model) {  
+int getDeviceSourceAddress(String model) {
   if (!pN2kDeviceList->ReadResetIsListUpdated()) return -1;
+
   for (uint8_t i = 0; i < N2kMaxBusDevices; i++){ 
     const tNMEA2000::tDevice *device=pN2kDeviceList->FindDeviceBySource(i);
     if ( device == 0 ) continue;
