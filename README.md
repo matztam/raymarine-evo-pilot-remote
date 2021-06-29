@@ -1,12 +1,9 @@
 # raymarine-evo-pilot-remote
 ## Libraries used:
-https://github.com/ttlappalainen/NMEA2000
-
-https://github.com/ttlappalainen/NMEA2000_mcp
-
-https://github.com/Seeed-Studio/CAN_BUS_Shield
-
-https://github.com/rogerclarkmelbourne/Arduino_STM32
+* https://github.com/ttlappalainen/NMEA2000
+* https://github.com/ttlappalainen/NMEA2000_mcp
+* https://github.com/Seeed-Studio/CAN_BUS_Shield
+* https://github.com/rogerclarkmelbourne/Arduino_STM32
 
 
 ## Hardware:
