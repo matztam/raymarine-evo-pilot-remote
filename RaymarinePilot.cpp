@@ -7,6 +7,8 @@ int RaymarinePilot::PilotSourceAddress = -1;
 uint8_t RaymarinePilot::PilotMode = PILOT_MODE_STANDBY;
 unsigned int pilotHeadingFilterCount = 0;
 
+bool RaymarinePilot::alarmWaypoint = false;
+
 //PilotSourceAddress muss aus der tN2kDeviceList ausgelesen werden. Beispiel dazu: DeviceAnalyzer.ino
 
 void RaymarinePilot::SetEvoPilotMode(tN2kMsg &N2kMsg,RaymarinePilotModes mode) {
@@ -66,7 +68,6 @@ void RaymarinePilot::SetEvoPilotCourse(tN2kMsg &N2kMsg,double heading, int chang
   }
   
   uint16_t courseRadials10000 = (uint16_t) (DegToRad(course) * 10000); //(newCourse * 174.53); 
-  
 
   byte byte0, byte1;
   byte0 = courseRadials10000 & 0xff;
@@ -92,6 +93,37 @@ void RaymarinePilot::SetEvoPilotCourse(tN2kMsg &N2kMsg,double heading, int chang
   N2kMsg.AddByte(byte0);
   N2kMsg.AddByte(byte1);
 }
+
+void RaymarinePilot::SetEvoPilotWind(tN2kMsg &N2kMsg, double targetWindDirection) {
+
+  uint16_t targetWind10000 = (uint16_t) (targetWindDirection * 10000); 
+  
+  byte byte0, byte1;
+  byte0 = targetWind10000 & 0xff;
+  byte1 = targetWind10000 >> 8;
+
+  //41,ff,00,f8,03,01,3b,07,03,04,04,00,00
+  
+  N2kMsg.SetPGN(126208UL);
+  N2kMsg.Priority=3;
+  N2kMsg.Destination=PilotSourceAddress;
+  N2kMsg.AddByte(1); // Field 1, 1 = Command Message, 2 = Acknowledge Message...
+  N2kMsg.AddByte(0x41);
+  N2kMsg.AddByte(0xff);
+  N2kMsg.AddByte(0x00);
+  N2kMsg.AddByte(0xf8);
+  N2kMsg.AddByte(0x03);
+  N2kMsg.AddByte(0x01);
+  N2kMsg.AddByte(0x3b);
+  N2kMsg.AddByte(0x07);
+  N2kMsg.AddByte(0x03);
+  N2kMsg.AddByte(0x04);
+  N2kMsg.AddByte(0x04);
+  N2kMsg.AddByte(byte0);
+  N2kMsg.AddByte(byte1);
+  
+}
+
 
 void RaymarinePilot::TurnToWaypointMode(tN2kMsg &N2kMsg){
  //"01,63,ff,00,f8,04,01,3b,07,03,04,04,81,01,05,ff,ff" 
@@ -219,6 +251,8 @@ void RaymarinePilot::HandleNMEA2000Msg(const tN2kMsg &N2kMsg) {
 
       if(AlarmCode == 0x1d && AlarmGroup == 0x01){
         Serial.println("Alarm Waypoint");
+
+        alarmWaypoint = true;
       }
     }
   }

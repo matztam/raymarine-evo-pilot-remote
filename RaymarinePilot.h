@@ -15,10 +15,13 @@ class RaymarinePilot {
   public: 
     static double Heading, Variation;
 
+    static bool alarmWaypoint;
+
     static uint8_t PilotMode;
     static int PilotSourceAddress;
   
     static void SetEvoPilotMode(tN2kMsg &N2kMsg, RaymarinePilotModes mode);
+    static void SetEvoPilotWind(tN2kMsg &N2kMsg, double targetWindDirection);
     static void SetEvoPilotCourse(tN2kMsg &N2kMsg, double heading, int change);
     static inline void SetEvoPilotCourse(tN2kMsg &N2kMsg, double heading) {
       return SetEvoPilotCourse(N2kMsg, heading, 0);
