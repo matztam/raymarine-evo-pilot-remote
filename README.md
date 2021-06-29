@@ -43,32 +43,21 @@ keypad and seal were printed using TPE. The front and back were laser cut of acr
 
 
 ## Commands via tty
-
-s: Standby
-
-a: Auto (course) mode
-
-w: Wind Vane mode
-
-t: Track mode
-
-+: Plus 10 degrees
-
--: Minus 10 degrees
-
-c: Confirm Waypoint advance
-
-1: Key +1
-
-2: Key +10
-
-3: Key -1
-
-4: Key -10
-
-5: Keys -1 and -10 pressed simultaneously
-
-6: Keys +1 and +10 pressed simultaneously
+| input | Description |
+| ----- | ----------- |
+| s | Standby |
+| a | Auto (course) mode |
+| w | Wind Vane mode |
+| t | Track mode |
+| + | Plus 10 degrees |
+| - | Minus 10 degrees |
+| c | Confirm Waypoint advance |
+| 1 | Key +1 |
+| 2 | Key +10 |
+| 3 | Key -1 |
+| 4 | Key -10 |
+| 5 | Keys -1 and -10 pressed simultaneously |
+| 6 | Keys +1 and +10 pressed simultaneously |
 
 ## Board
 
