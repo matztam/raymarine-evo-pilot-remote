@@ -17,6 +17,7 @@
 * MCP2551 CAN-BUS Module
 * Logic Level Converter (https://eckstein-shop.de/SparkFun-Logic-Level-Converter-Bi-Directiona-Shifter-Pegelwandler)
 * QIACHIP RX480E 433Mhz 4CH RF Receiver (https://qiachip.com/collections/diy-part-modules/products/qiachip-tx118sa-4-rx480e-4-wireless-wide-voltage-coding-transmitter-and-decoding-receiver-kit-4-channel-433mhz-output-input-module)
+* 12V to 5V step down converter
 
 ### Remote / Sender
 * Qiachip TX118SA 433Mhz 4CH RF Transmitter (https://qiachip.com/collections/diy-part-modules/products/qiachip-tx118sa-4-rx480e-4-wireless-wide-voltage-coding-transmitter-and-decoding-receiver-kit-4-channel-433mhz-output-input-module)
