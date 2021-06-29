@@ -1,18 +1,30 @@
+#define DEBUG
+
+#ifdef DEBUG
+#define DEBUG_PRINT(x) Serial.print(x)
+#define DEBUG_PRINTLN(x) Serial.println(x)
+#define DEBUG_PRINTLNFMT(x,y) Serial.println(x,y)
+#else
+#define DEBUG_PRINT(x)
+#define DEBUG_PRINTLN(x)
+#define DEBUG_PRINTLNFMT(x,y)
+#endif
+
 #define KEYLOCK_TIMEOUT_MS 1000
-#define TACK_TIMEOUT_MS 2000
+#define TACK_TIMEOUT_MS 1000
 #define HEADING_WIND_TIMEOUT_MS 2000
 
-#define INPUT_ADJUST_HEADING_PLUS_1       8   //1000
-#define INPUT_ADJUST_HEADING_PLUS_10      4   //0100
+#define INPUT_ADJUST_HEADING_PLUS_1       4   //0100
+#define INPUT_ADJUST_HEADING_PLUS_10      8   //1000
 #define INPUT_ADJUST_HEADING_MINUS_1      2   //0010
 #define INPUT_ADJUST_HEADING_MINUS_10     1   //0001
 #define INPUT_ADJUST_HEADING_AGAINST_WIND 7   //0111
 #define INPUT_TACK_STARBOARD              12  //1100
 #define INPUT_TACK_PORT                   3   //0011
-#define INPUT_STATE_AUTO                  10  //1010
-#define INPUT_STATE_WIND                  6   //0110
-#define INPUT_STATE_STANDBY               9   //1011
-#define INPUT_STATE_ROUTE                 5   //0101
+#define INPUT_STATE_AUTO                  6   //0110
+#define INPUT_STATE_WIND                  10  //1010
+#define INPUT_STATE_STANDBY               5   //0101
+#define INPUT_STATE_ROUTE                 9   //1011
 #define INPUT_KEYLOCK                     14  //1110
 
 #define pinBuzzer PB10
@@ -24,7 +36,7 @@
 
 #define USE_N2K_CAN 1
 
-#define N2k_SPI_CS_PIN 7 
+#define N2k_SPI_CS_PIN 7
 #define N2k_CAN_INT_PIN 27
 #define USE_MCP_CAN_CLOCK_SET 8  // possible values 8 for 8Mhz and 16 for 16 Mhz clock
 
@@ -50,15 +62,16 @@ long tackTimeout = 0;
 long headingToWindTimeout = 0;
 long beepTimeout = 0;
 
-int* beepPattern;
+unsigned short* beepPattern;
 int beepPatternIndex = 0;
 
-int BEEP_SINGLE_BUTTON[] = {100, 0};
-int BEEP_KEYLOCK_ENABLE[] = {150, 50, 150, 50, 150, 0};
-int BEEP_KEYLOCK_DISABLE[] = {150, 50, 150, 0};
-int BEEP_TACK[] = {1000, 0};
-int BEEP_HEADING_AGAINST_WIND[] = {1000, 200, 1000, 0};
-int BEEP_STARTUP[] = {300, 0};
+unsigned short BEEP_NULL[] = {0};
+unsigned short BEEP_SINGLE_BUTTON[] = {100, 0};
+unsigned short BEEP_KEYLOCK_ENABLE[] = {150, 50, 150, 50, 150, 0};
+unsigned short BEEP_KEYLOCK_DISABLE[] = {150, 50, 150, 0};
+unsigned short BEEP_TACK[] = {1000, 0};
+unsigned short BEEP_HEADING_AGAINST_WIND[] = {1000, 200, 1000, 0};
+unsigned short BEEP_STARTUP[] = {300, 0};
 
 void setup() {
   pinMode(pinBuzzer, OUTPUT);
@@ -90,10 +103,11 @@ void setup() {
   Serial.begin(115200);
   delay(100);
 
-  // Uncomment 3 rows below to see, what device will send to bus
+  #ifdef DEBUG
   NMEA2000.SetForwardStream(&Serial);  // PC output on due programming port
   NMEA2000.SetForwardType(tNMEA2000::fwdt_Text); // Show in clear text. Leave uncommented for default Actisense format.
   NMEA2000.SetForwardOwnMessages();
+  #endif
 
   // If you also want to see all traffic on the bus use N2km_ListenAndNode instead of N2km_NodeOnly below
   NMEA2000.SetMode(tNMEA2000::N2km_NodeOnly, 51); //N2km_NodeOnly N2km_ListenAndNode
@@ -104,8 +118,9 @@ void setup() {
 
   
   pN2kDeviceList = new tN2kDeviceList(&NMEA2000);
-  //NMEA2000.SetDebugMode(tNMEA2000::dm_ClearText); // Uncomment this, so you can test code without CAN bus chips on Arduino Mega
-  NMEA2000.EnableForward(true); // Disable all msg forwarding to USB (=Serial)
+  #ifdef DEBUG
+  NMEA2000.EnableForward(true);
+  #endif
   NMEA2000.Open();
 
   unsigned long t = millis();
@@ -277,12 +292,12 @@ void handleTimers(){
   }
 
   if(beepTimeout > 0 && beepTimeout < millis()){
-    beep([0]);
+    beep(BEEP_NULL);
   }
 }
 
 void handleRemoteInput(){
-  delay(50);
+  delay(100);
   
   byte input = readInput();
 
@@ -311,21 +326,25 @@ void handleRemoteInput(){
       
     case INPUT_ADJUST_HEADING_PLUS_1:
       RaymarinePilot::KeyCommand(N2kMsg, KEY_PLUS_1);
+      DEBUG_PRINTLN("INPUT_ADJUST_HEADING_PLUS_1");
       beep(BEEP_SINGLE_BUTTON);
       break;
       
     case INPUT_ADJUST_HEADING_PLUS_10:
       RaymarinePilot::KeyCommand(N2kMsg, KEY_PLUS_10);
+      DEBUG_PRINTLN("INPUT_ADJUST_HEADING_PLUS_10");
       beep(BEEP_SINGLE_BUTTON);
       break;
       
     case INPUT_ADJUST_HEADING_MINUS_1:
       RaymarinePilot::KeyCommand(N2kMsg, KEY_MINUS_1);
+      DEBUG_PRINTLN("INPUT_ADJUST_HEADING_MINUS_1");
       beep(BEEP_SINGLE_BUTTON);
       break;
       
     case INPUT_ADJUST_HEADING_MINUS_10:
       RaymarinePilot::KeyCommand(N2kMsg, KEY_MINUS_10);
+      DEBUG_PRINTLN("INPUT_ADJUST_HEADING_MINUS_10");
       beep(BEEP_SINGLE_BUTTON);
       break;
       
@@ -335,6 +354,7 @@ void handleRemoteInput(){
         return;
       }
       RaymarinePilot::SetEvoPilotWind(N2kMsg, 0);
+      DEBUG_PRINTLN("INPUT_ADJUST_HEADING_AGAINST_WIND");
       beep(BEEP_HEADING_AGAINST_WIND);
       break;
       
@@ -344,6 +364,7 @@ void handleRemoteInput(){
         return;
       }
       RaymarinePilot::KeyCommand(N2kMsg, KEY_PLUS_1_PLUS_10);
+      DEBUG_PRINTLN("INPUT_TACK_STARBOARD");
       beep(BEEP_TACK);
       break;
       
@@ -353,26 +374,31 @@ void handleRemoteInput(){
         return;
       }
       RaymarinePilot::KeyCommand(N2kMsg, KEY_MINUS_1_MINUS_10);
+      DEBUG_PRINTLN("INPUT_TACK_PORT");
       beep(BEEP_TACK);
       break;
       
     case INPUT_STATE_AUTO:
       RaymarinePilot::SetEvoPilotMode(N2kMsg, PILOT_MODE_AUTO);
+      DEBUG_PRINTLN("INPUT_STATE_AUTO");
       beep(BEEP_SINGLE_BUTTON);
       break;
       
     case INPUT_STATE_WIND:
       RaymarinePilot::SetEvoPilotMode(N2kMsg, PILOT_MODE_WIND);
+      DEBUG_PRINTLN("INPUT_STATE_WIND");
       beep(BEEP_SINGLE_BUTTON);
       break;
       
     case INPUT_STATE_STANDBY:
       RaymarinePilot::SetEvoPilotMode(N2kMsg, PILOT_MODE_STANDBY);
+      DEBUG_PRINTLN("INPUT_STATE_STANDBY");
       beep(BEEP_SINGLE_BUTTON);
       break;
       
     case INPUT_STATE_ROUTE:
       RaymarinePilot::SetEvoPilotMode(N2kMsg, PILOT_MODE_TRACK);
+      DEBUG_PRINTLN("INPUT_STATE_ROUTE");
       beep(BEEP_SINGLE_BUTTON);
       break;
       
@@ -389,42 +415,28 @@ byte readInput(){
   byte input = 0;
 
   input |= digitalRead(pinD0);
-  input |= digitalRead(pinD1);
-  input |= digitalRead(pinD2);
-  input |= digitalRead(pinD3);
+  input |= digitalRead(pinD1) << 1;
+  input |= digitalRead(pinD2) << 2;
+  input |= digitalRead(pinD3) << 3;
 
-  Serial.println(input, BIN);
-
+  DEBUG_PRINT("input :");
+  DEBUG_PRINTLNFMT(input, BIN);
   return input;
 }
 
-void beep(int pattern[]){
+void beep(unsigned short pattern[]){
   if(pattern[0] != 0){
-    Serial.println("beep init");
-    Serial.println(sizeof(pattern));
-    Serial.print("pattern");
-
-    for(int i = 0; i < sizeof(pattern); i++){
-      Serial.print(pattern[i]);
-      Serial.print(", ");
-    }
-    Serial.println("<<<");
-    
     beepPattern = pattern;
     beepPatternIndex = 0;
     digitalWrite(pinBuzzer, 0);
   }
   if(beepPattern[beepPatternIndex] == 0){
-    Serial.println("beep stop");
     beepPatternIndex = 0;
     beepTimeout = 0;
     digitalWrite(pinBuzzer, 0);
     return;
   }
-  digitalWrite(pinBuzzer, !digitalRead(pinBuzzer));
-  Serial.print("beep: ");
-  Serial.println(digitalRead(pinBuzzer));
-  
+  digitalWrite(pinBuzzer, !digitalRead(pinBuzzer));  
   beepTimeout = beepPattern[beepPatternIndex] + millis();
   beepPatternIndex++;  
 }
