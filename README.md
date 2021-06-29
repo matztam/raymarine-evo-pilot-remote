@@ -1,4 +1,8 @@
 # raymarine-evo-pilot-remote
+![photo](https://raw.githubusercontent.com/matztam/raymarine-evo-pilot-remote/master/photo.jpg)
+
+
+
 ## Libraries used:
 * https://github.com/ttlappalainen/NMEA2000
 * https://github.com/ttlappalainen/NMEA2000_mcp
@@ -25,7 +29,7 @@
 ### 3D print
 keypad and seal were printed using TPE. The front and back were laser cut of acrylic. The remaining parts were printed using PETG.
 
-![board](https://raw.githubusercontent.com/matztam/raymarine-evo-pilot-remote/master/3D-Models/1_remote_3d_model.png)
+![3d model](https://raw.githubusercontent.com/matztam/raymarine-evo-pilot-remote/master/3D-Models/1_remote_3d_model.png)
 
 
 ## Remote shortcuts
@@ -68,5 +72,5 @@ c: Confirm Waypoint advance
 
 ## Board
 
-![board](https://raw.githubusercontent.com/matztam/raymarine-evo-pilot-remote/master/Board/Autopilot_remote_receiver.png)
-![board](https://raw.githubusercontent.com/matztam/raymarine-evo-pilot-remote/master/Board/Autopilot_remote_sender.png)
+![board receiver](https://raw.githubusercontent.com/matztam/raymarine-evo-pilot-remote/master/Board/Autopilot_remote_receiver.png)
+![board sender](https://raw.githubusercontent.com/matztam/raymarine-evo-pilot-remote/master/Board/Autopilot_remote_sender.png)
