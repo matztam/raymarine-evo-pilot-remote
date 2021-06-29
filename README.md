@@ -27,7 +27,7 @@
 
 
 ### 3D print
-keypad and seal were printed using TPE. The front and back were laser cut of acrylic. The remaining parts were printed using PETG.
+keypad and seal were printed using TPE. The front and back were laser cut of acrylic. The remaining parts were printed using PETG. The front was glued to the frame using T7000
 
 ![3d model](https://raw.githubusercontent.com/matztam/raymarine-evo-pilot-remote/master/3D-Models/1_remote_3d_model.png)
 
