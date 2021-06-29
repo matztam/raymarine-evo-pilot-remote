@@ -1,19 +1,3 @@
-/*
-Pin-Bez.     Empf.-Bez.  Pin.Nr
-PB11    VT      0
-PB12    D0      31
-PB13    D1      30
-PB14    D2      29
-PB15    D3      28
-pb10    Summer    1
-
-Receiver:
-  o o o o o o o ========
-  gnd + D0  D1  D2  D3  VT
-    3,3V
-    
-*/
-
 #define KEYLOCK_TIMEOUT_MS 1000
 #define TACK_TIMEOUT_MS 2000
 #define HEADING_WIND_TIMEOUT_MS 2000
@@ -40,8 +24,8 @@ Receiver:
 
 #define USE_N2K_CAN 1
 
-#define N2k_SPI_CS_PIN 7 //53  // Pin for SPI Can Select
-#define N2k_CAN_INT_PIN 27 // maple: pin 27
+#define N2k_SPI_CS_PIN 7 
+#define N2k_CAN_INT_PIN 27
 #define USE_MCP_CAN_CLOCK_SET 8  // possible values 8 for 8Mhz and 16 for 16 Mhz clock
 
 #include <Arduino.h>
@@ -86,13 +70,6 @@ void setup() {
   pinMode(pinD3, INPUT);
 
   attachInterrupt(digitalPinToInterrupt(pinVT), handleRemoteInput, RISING);
-
-  /*Timer2.setMode(TIMER_CH1, TIMER_OUTPUTCOMPARE);
-  Timer2.setPeriod(1000000); // 1 second
-  Timer2.setCompare(TIMER_CH1, 1);      // overflow might be small
-  Timer2.attachInterrupt(TIMER_CH1, foo);
-  Timer2.resume();*/
-
 
   // Reserve enough buffer for sending all messages. This does not work on small memory devices like Uno or Mega
   NMEA2000.SetN2kCANReceiveFrameBufSize(150);
@@ -433,7 +410,6 @@ void beep(int pattern[]){
     }
     Serial.println("<<<");
     
-    //memcpy(beepPattern, pattern, sizeof(pattern));
     beepPattern = pattern;
     beepPatternIndex = 0;
     digitalWrite(pinBuzzer, 0);
