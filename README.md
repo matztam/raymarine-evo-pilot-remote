@@ -28,12 +28,12 @@
 ### Receiver
 * Maple Mini (STM32F103) / Arduino_STM32
 * MCP2551 CAN-BUS Module
-* Logic Level Converter (https://eckstein-shop.de/SparkFun-Logic-Level-Converter-Bi-Directiona-Shifter-Pegelwandler)
-* QIACHIP RX480E 433Mhz 4CH RF Receiver (https://qiachip.com/collections/diy-part-modules/products/qiachip-tx118sa-4-rx480e-4-wireless-wide-voltage-coding-transmitter-and-decoding-receiver-kit-4-channel-433mhz-output-input-module)
+* Logic Level Converter (https://www.sparkfun.com/products/12009)
+* QIACHIP RX480E 433Mhz 4CH RF Receiver (https://qiachip.com/collections/all-products-1/products/qiachip-tx118sa-4-rx480e-kit-433-92mhz-wireless-wide-voltage-coding-transmitter-module-and-decoding-receiver-module-kit-4ch-rf-ev1527-encoding-learning-module-diy-receiver-kit)
 * 12V to 5V step down converter
 
 ### Remote / Sender
-* Qiachip TX118SA 433Mhz 4CH RF Transmitter (https://qiachip.com/collections/diy-part-modules/products/qiachip-tx118sa-4-rx480e-4-wireless-wide-voltage-coding-transmitter-and-decoding-receiver-kit-4-channel-433mhz-output-input-module)
+* Qiachip TX118SA 433Mhz 4CH RF Transmitter (https://qiachip.com/collections/all-products-1/products/qiachip-tx118sa-4-rx480e-kit-433-92mhz-wireless-wide-voltage-coding-transmitter-module-and-decoding-receiver-module-kit-4ch-rf-ev1527-encoding-learning-module-diy-receiver-kit)
 * Qi wireless charging receiver coil (https://www.aliexpress.com/item/32966646423.html)
 * Lipo charger module
 * Lipo battery 3.7V
