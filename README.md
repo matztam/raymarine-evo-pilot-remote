@@ -77,3 +77,8 @@ keypad and seal were printed using TPE. The front and back were laser cut of acr
 
 ![board receiver](https://raw.githubusercontent.com/matztam/raymarine-evo-pilot-remote/master/Board/Autopilot_remote_receiver_brd.png)
 ![board sender](https://raw.githubusercontent.com/matztam/raymarine-evo-pilot-remote/master/Board/Autopilot_remote_sender_brd.png)
+
+## Schematic
+
+![schematic receiver](https://raw.githubusercontent.com/matztam/raymarine-evo-pilot-remote/master/Schematic/Autopilot_remote_receiver_sch.png)
+![schematic sender](https://raw.githubusercontent.com/matztam/raymarine-evo-pilot-remote/master/Schematic/Autopilot_remote_sender_sch.png)
