@@ -49,6 +49,7 @@
 
 #include "RaymarinePilot.h"
 #include "N2kDeviceList.h"
+#include <libmaple/iwdg.h>
 
 const unsigned long TransmitMessages[] PROGMEM={126208UL,0};
 const unsigned long ReceiveMessages[] PROGMEM={127250L,65288L,65379L,0};
@@ -76,6 +77,7 @@ unsigned short BEEP_HEADING_AGAINST_WIND[] = {1000, 200, 1000, 0};
 unsigned short BEEP_STARTUP[] = {300, 0};
 
 void setup() {
+  iwdg_init(IWDG_PRE_256, 3000); // init an 16+ second wd timer
   pinMode(pinBuzzer, OUTPUT);
   digitalWrite(pinBuzzer, 0);
   pinMode(pinVT, INPUT);
@@ -128,6 +130,7 @@ void setup() {
   unsigned long t = millis();
   
   while(RaymarinePilot::PilotSourceAddress < 0 && millis() - t < 5000){
+    iwdg_feed();
     NMEA2000.ParseMessages();
     RaymarinePilot::PilotSourceAddress = getDeviceSourceAddress("EV-1");
     delay(50);
@@ -141,9 +144,11 @@ void setup() {
   }
 
   beep(BEEP_STARTUP);
+  iwdg_init(IWDG_PRE_256, 1250); // set watchdog timer to 8 seconds
 }
 
 void loop() {
+  iwdg_feed();
   handleTimers();  
   
   if (Serial.available() > 0) {
