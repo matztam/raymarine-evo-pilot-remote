@@ -15,7 +15,7 @@ class RaymarinePilot {
   public: 
     static double Heading, Variation;
 
-    static bool alarmWaypoint;
+    static unsigned long alarmWaypoint;
 
     static uint8_t PilotMode;
     static int PilotSourceAddress;

@@ -10,6 +10,8 @@
 #define DEBUG_PRINTLNFMT(x,y)
 #endif
 
+//#define AUTO_ACCEPT_TURN_TO_WAYPOINT
+
 #define KEYLOCK_TIMEOUT_MS 1000
 #define TACK_TIMEOUT_MS 1000
 #define HEADING_WIND_TIMEOUT_MS 2000
@@ -258,18 +260,25 @@ void loop() {
     }
   }
 
-  if(RaymarinePilot::alarmWaypoint){
-    Serial.println("Confirm Waypoint");
-      
-    tN2kMsg N2kMsg1;
-    RaymarinePilot::TurnToWaypointMode(N2kMsg1);
-    NMEA2000.SendMsg(N2kMsg1);
+  // wait 3 seconds before handling waypioint alarm
+  if(RaymarinePilot::alarmWaypoint < millis() - 3000){
+    #ifdef AUTO_ACCEPT_TURN_TO_WAYPOINT
+      Serial.println("Confirm Waypoint");
 
-    tN2kMsg N2kMsg2;
-    RaymarinePilot::TurnToWaypoint(N2kMsg2);
-    NMEA2000.SendMsg(N2kMsg2);
+      // only confirm if still in track mode
+      if(RaymarinePilot::PilotMode == PILOT_MODE_TRACK){
+        tN2kMsg N2kMsg1;
+        RaymarinePilot::TurnToWaypointMode(N2kMsg1);
+        NMEA2000.SendMsg(N2kMsg1);
+    
+        tN2kMsg N2kMsg2;
+        RaymarinePilot::TurnToWaypoint(N2kMsg2);
+        NMEA2000.SendMsg(N2kMsg2);
+      }
+    #endif
 
-    RaymarinePilot::alarmWaypoint = false;
+    // set alarm handled
+    RaymarinePilot::alarmWaypoint = 0;
   }
 
   NMEA2000.ParseMessages();  

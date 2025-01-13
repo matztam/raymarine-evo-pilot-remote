@@ -7,11 +7,11 @@ int RaymarinePilot::PilotSourceAddress = -1;
 uint8_t RaymarinePilot::PilotMode = PILOT_MODE_STANDBY;
 unsigned int pilotHeadingFilterCount = 0;
 
-bool RaymarinePilot::alarmWaypoint = false;
-
-//PilotSourceAddress muss aus der tN2kDeviceList ausgelesen werden. Beispiel dazu: DeviceAnalyzer.ino
+unsigned long RaymarinePilot::alarmWaypoint = 0;
 
 void RaymarinePilot::SetEvoPilotMode(tN2kMsg &N2kMsg,RaymarinePilotModes mode) {
+  RaymarinePilot::PilotMode = mode;
+  
   N2kMsg.SetPGN(126208UL);
   N2kMsg.Priority=3;
   N2kMsg.Destination=PilotSourceAddress;
@@ -252,7 +252,9 @@ void RaymarinePilot::HandleNMEA2000Msg(const tN2kMsg &N2kMsg) {
       if(AlarmCode == 0x1d && AlarmGroup == 0x01){
         Serial.println("Alarm Waypoint");
 
-        alarmWaypoint = true;
+        if(alarmWaypoint == 0){
+          alarmWaypoint = millis();
+        }
       }
     }
   }
@@ -267,27 +269,32 @@ void RaymarinePilot::HandleNMEA2000Msg(const tN2kMsg &N2kMsg) {
       Serial.print(" ");
       Serial.println(Submode, HEX);
 
+      // set alarmWaypoint = 0 when no longer in track mode
+
       if(Mode == 0x00 && Submode == 0x00){
-        //RaymarinePilot::PilotMode = PILOT_MODE_STANDBY;
+        alarmWaypoint = 0;
+        RaymarinePilot::PilotMode = PILOT_MODE_STANDBY;
         Serial.println("PILOT_MODE_STANDBY");
       }
       else if(Mode == 0x40 && Submode == 0x00){
-        //RaymarinePilot::PilotMode = PILOT_MODE_AUTO;
+        alarmWaypoint = 0;
+        RaymarinePilot::PilotMode = PILOT_MODE_AUTO;
         Serial.println("PILOT_MODE_AUTO");
       }
       
       else if(Mode == 0x00 && Submode == 0x01){
-        //RaymarinePilot::PilotMode = PILOT_MODE_WIND;
+        alarmWaypoint = 0;
+        RaymarinePilot::PilotMode = PILOT_MODE_WIND;
         Serial.println("PILOT_MODE_WIND");
       }
       
       else if(Mode == 0x81 && Submode == 0x01){
-        //RaymarinePilot::PilotMode = PILOT_MODE_TRACK;
+        RaymarinePilot::PilotMode = PILOT_MODE_TRACK;
         Serial.println("PILOT_MODE_TRACK");
       }
       
       else if(Mode == 0x80 && Submode == 0x01){
-        //RaymarinePilot::PilotMode = PILOT_MODE_TRACK;
+        RaymarinePilot::PilotMode = PILOT_MODE_TRACK;
         Serial.println("PILOT_MODE_TRACK");
       }
       
